@@ -5,6 +5,7 @@ let bcrypt = require('bcrypt')
 let jwt = require('jsonwebtoken')
 let fs = require('fs');
 const { CheckLogin } = require("../utils/authHandler");
+const { ChangePasswordValidator, validatedResult } = require("../utils/validateHandler");
 const privateKey = fs.readFileSync('./private.key', 'utf8');
 
 router.post('/register', async function (req, res, next) {
@@ -65,6 +66,15 @@ router.post('/login', async function (req, res, next) {
 })
 router.get('/me',CheckLogin,function(req,res,next){
     res.send(req.user)
+})
+
+router.post('/changepassword', CheckLogin, ChangePasswordValidator, validatedResult, async function (req, res, next) {
+    try {
+        let result = await userController.ChangePassword(req.user._id, req.body.oldpassword, req.body.newpassword);
+        res.send(result);
+    } catch (error) {
+        res.status(404).send({ message: error.message });
+    }
 })
 
 module.exports = router;
